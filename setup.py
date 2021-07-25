@@ -1,5 +1,5 @@
 from setuptools import find_packages
-import datetime, os, subprocess, re
+import datetime, os, re, shutil, subprocess
 from pathlib import Path
 
 # Force wheel to be platform specific
@@ -34,6 +34,7 @@ except ImportError:
 
 # https://stackoverflow.com/questions/42585210/extending-setuptools-extension-to-use-cmake-in-setup-py
 # https://github.com/python/cpython/blob/main/Lib/distutils/command/build_clib.py
+# https://stackoverflow.com/questions/16854066/using-distutils-and-build-clib-to-build-c-library
 
 from setuptools import setup
 from setuptools.command.build_clib import build_clib as build_clib_orig
@@ -47,11 +48,10 @@ class build_clib(build_clib_orig):
 
     def build_cmake(self, lib):
         cwd = Path().absolute()
-        os.chdir(Path(__file__).absolute().parent)
-        self.spawn(['git', 'submodule', 'update', '--init', 'torchaudio'])
+        project_root = Path(__file__).absolute().parent
+        os.chdir(project_root)
 
-        # these dirs will be created in build_py, so if you don't have
-        # any python sources to bundle, the dirs will be missing
+        # These dirs will be created in build_py, so if you don't have any python sources to bundle, the dirs will be missing.
         cmake_dir = Path(lib[1]['sources'][0]).absolute()
         build_temp = Path(cmake_dir / 'build').absolute()
         build_temp.mkdir(parents=True, exist_ok=True)
@@ -61,18 +61,14 @@ class build_clib(build_clib_orig):
         cmake_args = [
             '-GNinja',
             '-DCMAKE_PREFIX_PATH=' + cmake_prefix_path,
-            '-DBUILD_SOX=OFF',
-            '-DBUILD_KALDI=OFF',
-            '-DBUILD_LIBTORCHAUDIO=OFF',
-            # '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + str(extdir.parent.absolute()),
             '-DCMAKE_BUILD_TYPE=' + config,
         ]
 
-        num_processors = os.cpu_count()
         build_args = [
             # '--config', config,
             '--',
         ]
+        num_processors = os.cpu_count()
         if num_processors is not None:
             build_args.append('-j{}'.format(num_processors))
 
@@ -81,8 +77,9 @@ class build_clib(build_clib_orig):
         self.spawn(['cmake', '..'] + cmake_args)
         if not self.dry_run:
             self.spawn(['cmake', '--build', '.'] + build_args)
-        # Troubleshooting: if fail on line above then delete all possible 
-        # temporary CMake files including "CMakeCache.txt" in top level dir.
+        # Troubleshooting: if fail on line above then delete all possible temporary CMake files including "CMakeCache.txt" in top level dir.
+
+        # shutil.copy('libwav2vec2_stt_lib.so', project_root / 'wav2vec2_stt/')
         os.chdir(str(cwd))
         # print("Done!")
 
@@ -110,7 +107,7 @@ with open(os.path.join(here, 'README.md')) as f:
 
 
 setup(
-    libraries=[('torchaudio', {'sources': ['torchaudio/examples/libtorchaudio']})],
+    libraries=[('native', {'sources': ['native']})],
     cmdclass={
         'build_clib': build_clib,
         'bdist_wheel': bdist_wheel_impure,
