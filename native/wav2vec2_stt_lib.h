@@ -22,5 +22,6 @@
 
 #include <cstdint>
 
-WAV2VEC2_STT_API bool wav2vec2_stt__init(const char *model_dirname);
-WAV2VEC2_STT_API bool wav2vec2_stt__decode(float *wav_samples, int32_t wav_samples_len, char *text, int32_t text_max_len);
+WAV2VEC2_STT_API void *wav2vec2_stt__construct(const char *model_dirname);
+WAV2VEC2_STT_API bool wav2vec2_stt__destruct(void *model_vp);
+WAV2VEC2_STT_API bool wav2vec2_stt__decode(void *model_vp, float *wav_samples, int32_t wav_samples_len, char *text, int32_t text_max_len);

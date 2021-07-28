@@ -43,14 +43,20 @@ class FFIObject(object):
 class Wav2Vec2STT(FFIObject):
 
     _library_header_text = """
-        WAV2VEC2_STT_API bool wav2vec2_stt__init(const char *model_dirname);
-        WAV2VEC2_STT_API bool wav2vec2_stt__decode(float *wav_samples, int32_t wav_samples_len, char *text, int32_t text_max_len);
+        WAV2VEC2_STT_API void *wav2vec2_stt__construct(const char *model_dirname);
+        WAV2VEC2_STT_API bool wav2vec2_stt__destruct(void *model_vp);
+        WAV2VEC2_STT_API bool wav2vec2_stt__decode(void *model_vp, float *wav_samples, int32_t wav_samples_len, char *text, int32_t text_max_len);
     """
 
     def __init__(self, model_dirname):
         super().__init__()
-        result = self._lib.wav2vec2_stt__init(encode(model_dirname))
-        if not result: raise Exception("wav2vec2_stt__init failed")
+        result = self._lib.wav2vec2_stt__construct(encode(model_dirname))
+        if result == _ffi.NULL: raise Exception("wav2vec2_stt__construct failed")
+        self._model = result
+
+    def __del__(self):
+        result = self._lib.wav2vec2_stt__destruct(self._model)
+        if not result: raise Exception("wav2vec2_stt__destruct failed")
 
     def decode(self, wav_samples, text_max_len=1024):
         if not isinstance(wav_samples, np.ndarray): wav_samples = np.frombuffer(wav_samples, np.int16)
@@ -59,7 +65,7 @@ class Wav2Vec2STT(FFIObject):
         wav_samples_float = _ffi.cast('float *', wav_samples_char)
         text_p = _ffi.new('char[]', text_max_len)
 
-        result = self._lib.wav2vec2_stt__decode(wav_samples_float, len(wav_samples), text_p, text_max_len)
+        result = self._lib.wav2vec2_stt__decode(self._model, wav_samples_float, len(wav_samples), text_p, text_max_len)
         if not result: raise Exception("wav2vec2_stt__decode failed")
 
         text = decode(_ffi.string(text_p))
