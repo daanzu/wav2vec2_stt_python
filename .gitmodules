@@ -1,6 +1,3 @@
-[submodule "torchaudio"]
-	path = torchaudio
-	url = git@github.com:pytorch/audio.git
 [submodule "native/simplectc"]
 	path = native/simplectc
 	url = git@github.com:mthrok/ctcdecode.git

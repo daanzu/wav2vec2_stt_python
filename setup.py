@@ -1,6 +1,8 @@
 from setuptools import find_packages
-import datetime, os, re, shutil, subprocess
-from pathlib import Path
+import datetime, os, re, subprocess
+
+from skbuild import setup
+
 
 # Force wheel to be platform specific
 # https://stackoverflow.com/questions/45150304/how-to-force-a-python-wheel-to-be-platform-specific-when-building-it
@@ -32,58 +34,6 @@ except ImportError:
     install_platlib = None
 
 
-# https://stackoverflow.com/questions/42585210/extending-setuptools-extension-to-use-cmake-in-setup-py
-# https://github.com/python/cpython/blob/main/Lib/distutils/command/build_clib.py
-# https://stackoverflow.com/questions/16854066/using-distutils-and-build-clib-to-build-c-library
-
-from setuptools import setup
-from setuptools.command.build_clib import build_clib as build_clib_orig
-
-class build_clib(build_clib_orig):
-
-    def run(self):
-        for lib in self.libraries:
-            self.build_cmake(lib)
-        # super().run()
-
-    def build_cmake(self, lib):
-        cwd = Path().absolute()
-        project_root = Path(__file__).absolute().parent
-        os.chdir(project_root)
-
-        # These dirs will be created in build_py, so if you don't have any python sources to bundle, the dirs will be missing.
-        cmake_dir = Path(lib[1]['sources'][0]).absolute()
-        build_temp = Path(cmake_dir / 'build').absolute()
-        build_temp.mkdir(parents=True, exist_ok=True)
-
-        cmake_prefix_path = subprocess.check_output(['python', '-c', 'import torch;print(torch.utils.cmake_prefix_path)'], text=True).strip()
-        config = 'Debug' if self.debug else 'Release'
-        cmake_args = [
-            '-GNinja',
-            '-DCMAKE_PREFIX_PATH=' + cmake_prefix_path,
-            '-DCMAKE_BUILD_TYPE=' + config,
-        ]
-
-        build_args = [
-            # '--config', config,
-            '--',
-        ]
-        num_processors = os.cpu_count()
-        if num_processors is not None:
-            build_args.append('-j{}'.format(num_processors))
-
-        os.chdir(str(build_temp))
-        self.spawn(['git', 'submodule', 'update', '--init', '../simplectc'])
-        self.spawn(['cmake', '..'] + cmake_args)
-        if not self.dry_run:
-            self.spawn(['cmake', '--build', '.'] + build_args)
-        # Troubleshooting: if fail on line above then delete all possible temporary CMake files including "CMakeCache.txt" in top level dir.
-
-        # shutil.copy('libwav2vec2_stt_lib.so', project_root / 'wav2vec2_stt/')
-        os.chdir(str(cwd))
-        # print("Done!")
-
-
 here = os.path.abspath(os.path.dirname(__file__))
 
 # https://packaging.python.org/guides/single-sourcing-package-version/
@@ -105,14 +55,15 @@ if version.endswith('dev0'):
 with open(os.path.join(here, 'README.md')) as f:
     long_description = f.read()
 
+cmake_prefix_path = subprocess.check_output(['python', '-c', 'import torch;print(torch.utils.cmake_prefix_path)'], text=True).strip()
+
 
 setup(
-    libraries=[('native', {'sources': ['native']})],
     cmdclass={
-        'build_clib': build_clib,
         'bdist_wheel': bdist_wheel_impure,
         'install': install_platlib,
     },
+    cmake_args=['-DCMAKE_PREFIX_PATH=' + cmake_prefix_path],
 
     name='wav2vec2_stt',
     version=version,
@@ -144,15 +95,13 @@ setup(
     install_requires=[
         'cffi ~= 1.12',
         'numpy ~= 1.16, != 1.19.4',
-        # 'ush ~= 3.1',
-        # 'requests >= 2',
     ],
     extras_require={
         # 'dev': ['check-manifest'],
         # 'test': ['coverage'],
     },
     package_data={
-        'wav2vec2_stt': ['exec/*/*'],
+        'wav2vec2_stt': ['libwav2vec2_stt_lib.*'],
         '': ['LICENSE'],
     },
     project_urls={
