@@ -1,3 +1,9 @@
+#
+# This file is part of wav2vec2_stt.
+# (c) Copyright 2021 by David Zurow
+# Licensed under the AGPL-3.0; see LICENSE file.
+#
+
 from setuptools import find_packages
 import datetime, os, re, subprocess
 
@@ -55,7 +61,8 @@ if version.endswith('dev0'):
 with open(os.path.join(here, 'README.md')) as f:
     long_description = f.read()
 
-cmake_prefix_path = subprocess.check_output(['python', '-c', 'import torch;print(torch.utils.cmake_prefix_path)'], text=True).strip()
+torch_cmake_prefix_path = os.environ.get('TORCH_CMAKE_PREFIX_PATH') \
+    or subprocess.check_output(['python', '-c', 'import torch;print(torch.utils.cmake_prefix_path)'], text=True).strip()
 
 
 setup(
@@ -63,7 +70,7 @@ setup(
         'bdist_wheel': bdist_wheel_impure,
         'install': install_platlib,
     },
-    cmake_args=['-DCMAKE_PREFIX_PATH=' + cmake_prefix_path],
+    cmake_args=['-DCMAKE_PREFIX_PATH=' + torch_cmake_prefix_path],
 
     name='wav2vec2_stt',
     version=version,
