@@ -98,7 +98,7 @@ setup(
     ],
     extras_require={
         # 'dev': ['check-manifest'],
-        # 'test': ['coverage'],
+        'test': ['pytest'],
     },
     package_data={
         'wav2vec2_stt': ['libwav2vec2_stt_lib.*'],
