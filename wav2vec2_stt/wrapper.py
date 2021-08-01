@@ -15,8 +15,9 @@ elif sys.platform.startswith('darwin'): _platform = 'macos'
 else: raise Exception("unknown sys.platform")
 
 _ffi = FFI()
-_library_binary_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-    dict(windows='libwav2vec2_stt_lib.dll', linux='libwav2vec2_stt_lib.so', macos='libwav2vec2_stt_lib.dylib')[_platform])
+_library_directory_path = os.path.dirname(os.path.abspath(__file__))
+_library_binary_path = os.path.join(_library_directory_path,
+    dict(windows='wav2vec2_stt_lib.dll', linux='libwav2vec2_stt_lib.so', macos='libwav2vec2_stt_lib.dylib')[_platform])
 _c_source_ignore_regex = re.compile(r'(\b(extern|WAV2VEC2_STT_API)\b)|("C")|(//.*$)', re.MULTILINE)  # Pattern for extraneous stuff to be removed
 
 def encode(text):

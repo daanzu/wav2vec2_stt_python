@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
+
+cmake_policy(SET CMP0091 NEW)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 project(wav2vec2_stt)
 
@@ -14,8 +17,11 @@ add_library(wav2vec2_stt_lib SHARED
 target_link_libraries(wav2vec2_stt_lib "${TORCH_LIBRARIES}" "${CTCDECODE_LIBRARY}")
 set_property(TARGET wav2vec2_stt_lib PROPERTY CXX_STANDARD 14)
 
-add_custom_target(install_wav2vec2_stt_lib ALL
+add_custom_command(
+    TARGET wav2vec2_stt_lib POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:wav2vec2_stt_lib>
+        ${PROJECT_SOURCE_DIR}/wav2vec2_stt/
     COMMENT "Installing wav2vec2_stt_lib shared library file to python project directory"
-    COMMAND cp ${PROJECT_BINARY_DIR}/libwav2vec2_stt_lib${CMAKE_SHARED_LIBRARY_SUFFIX} ${PROJECT_SOURCE_DIR}/wav2vec2_stt/
 )
-add_dependencies(install_wav2vec2_stt_lib wav2vec2_stt_lib)
+
