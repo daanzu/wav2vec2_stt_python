@@ -61,6 +61,9 @@ if version.endswith('dev0'):
 with open(os.path.join(here, 'README.md')) as f:
     long_description = f.read()
 
+if not os.path.exists('native/simplectc/CMakeLists.txt'):
+    subprocess.check_call(['git', 'submodule', 'update', '--init', 'native/simplectc/'])
+
 torch_cmake_prefix_path = os.environ.get('TORCH_CMAKE_PREFIX_PATH') \
     or subprocess.check_output(['python', '-c', 'import torch;print(torch.utils.cmake_prefix_path)'], text=True).strip()
 
