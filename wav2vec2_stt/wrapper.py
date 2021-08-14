@@ -54,12 +54,15 @@ class Wav2Vec2STT(FFIObject):
         if not os.path.exists(model_dirname):
             raise FileNotFoundError("model directory '%s' does not exist" % model_dirname)
         result = self._lib.wav2vec2_stt__construct(encode(model_dirname))
-        if result == _ffi.NULL: raise Exception("wav2vec2_stt__construct failed")
+        if result == _ffi.NULL:
+            raise Exception("wav2vec2_stt__construct failed")
         self._model = result
 
     def __del__(self):
-        result = self._lib.wav2vec2_stt__destruct(self._model)
-        if not result: raise Exception("wav2vec2_stt__destruct failed")
+        if hasattr(self, '_model'):
+            result = self._lib.wav2vec2_stt__destruct(self._model)
+            if not result:
+                raise Exception("wav2vec2_stt__destruct failed")
 
     def decode(self, wav_samples, text_max_len=1024):
         if not isinstance(wav_samples, np.ndarray): wav_samples = np.frombuffer(wav_samples, np.int16)
@@ -69,8 +72,10 @@ class Wav2Vec2STT(FFIObject):
         text_p = _ffi.new('char[]', text_max_len)
 
         result = self._lib.wav2vec2_stt__decode(self._model, wav_samples_float, len(wav_samples), text_p, text_max_len)
-        if not result: raise Exception("wav2vec2_stt__decode failed")
+        if not result:
+            raise Exception("wav2vec2_stt__decode failed")
 
         text = decode(_ffi.string(text_p))
-        if len(text) >= (text_max_len - 1): raise Exception("text may be too long")
+        if len(text) >= (text_max_len - 1):
+            raise Exception("text may be too long")
         return text
