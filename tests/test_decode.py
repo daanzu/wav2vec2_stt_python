@@ -20,8 +20,8 @@ def decoder():
 @pytest.fixture
 def wav_samples():
     import wave
-    wave_file = wave.open(test_wav_path, 'rb')
-    data = wave_file.readframes(wave_file.getnframes())
+    wav_file = wave.open(test_wav_path, 'rb')
+    data = wav_file.readframes(wav_file.getnframes())
     return data
 
 
