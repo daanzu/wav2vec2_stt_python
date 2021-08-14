@@ -51,6 +51,8 @@ class Wav2Vec2STT(FFIObject):
 
     def __init__(self, model_dirname):
         super().__init__()
+        if not os.path.exists(model_dirname):
+            raise FileNotFoundError("model directory '%s' does not exist" % model_dirname)
         result = self._lib.wav2vec2_stt__construct(encode(model_dirname))
         if result == _ffi.NULL: raise Exception("wav2vec2_stt__construct failed")
         self._model = result

@@ -9,6 +9,7 @@ import os
 import pytest
 
 test_model_path = os.path.join(os.path.dirname(__file__), 'model')
+test_missing_model_path = os.path.join(os.path.dirname(__file__), 'missing_model')
 test_wav_path = os.path.join(os.path.dirname(__file__), 'test.wav')
 
 
@@ -24,6 +25,12 @@ def wav_samples():
     data = wav_file.readframes(wav_file.getnframes())
     return data
 
+
+def test_missing_model():
+    assert not os.path.exists(test_missing_model_path)
+    from wav2vec2_stt import Wav2Vec2STT
+    with pytest.raises(FileNotFoundError):
+        Wav2Vec2STT(test_missing_model_path)
 
 def test_init(decoder):
     pass
