@@ -38,6 +38,25 @@ wav_samples = wav_file.readframes(wav_file.getnframes())
 assert decoder.decode(wav_samples).strip().lower() == 'it depends on the context'
 ```
 
+Also contains a simple CLI interface for recognizing `wav` files:
+
+```bash
+$ python -m wav2vec2_stt decode model test.wav
+IT DEPENDS ON THE CONTEXT
+$ python -m wav2vec2_stt decode model test.wav test.wav
+IT DEPENDS ON THE CONTEXT
+IT DEPENDS ON THE CONTEXT
+$ python -m wav2vec2_stt -h
+usage: python -m wav2vec2_stt [-h] {decode} ...
+
+positional arguments:
+  {decode}    sub-command
+    decode    decode one or more WAV files
+
+optional arguments:
+  -h, --help  show this help message and exit
+```
+
 ## Installation/Building
 
 Recommended installation via wheel from pip (requires a recent version of pip):
