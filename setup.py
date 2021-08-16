@@ -77,7 +77,7 @@ setup(
 
     name='wav2vec2_stt',
     version=version,
-    # description='wav2vec2_stt',
+    description='Simple Python library, distributed via binary wheels with few direct dependencies, for easily using wav2vec 2.0 models for speech recognition.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/daanzu/wav2vec2_stt',
@@ -90,7 +90,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Affero General Public License v3',
         'Programming Language :: Python :: 3',
