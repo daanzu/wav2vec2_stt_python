@@ -53,6 +53,10 @@ class Wav2Vec2STT(FFIObject):
         super().__init__()
         if not os.path.exists(model_dirname):
             raise FileNotFoundError("model directory '%s' does not exist" % model_dirname)
+        if not os.path.exists(os.path.join(model_dirname, 'encoder.zip')):
+            raise FileNotFoundError("model directory '%s' does not contain 'encoder.zip'" % model_dirname)
+        if not os.path.exists(os.path.join(model_dirname, 'decoder.zip')):
+            raise FileNotFoundError("model directory '%s' does not contain 'decoder.zip'" % model_dirname)
         result = self._lib.wav2vec2_stt__construct(encode(model_dirname))
         if result == _ffi.NULL:
             raise Exception("wav2vec2_stt__construct failed")
