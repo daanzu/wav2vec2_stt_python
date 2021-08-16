@@ -4,7 +4,7 @@
 # Licensed under the AGPL-3.0; see LICENSE file.
 #
 
-import os
+import os, subprocess
 
 import pytest
 
@@ -40,3 +40,14 @@ def test_destruct(decoder):
 
 def test_decode(decoder, wav_samples):
     assert decoder.decode(wav_samples).strip().lower() == 'it depends on the context'
+
+
+class TestCLI:
+
+    def test_decode(self):
+        process = subprocess.run(f'python -m wav2vec2_stt decode {test_model_path} {test_wav_path}', shell=True, check=True, capture_output=True)
+        assert process.stdout.decode().strip().lower() == 'it depends on the context'
+
+    def test_decode_multiple(self):
+        process = subprocess.run(f'python -m wav2vec2_stt decode {test_model_path} {test_wav_path} {test_wav_path}', shell=True, check=True, capture_output=True)
+        assert process.stdout.decode().strip().lower().splitlines() == ['it depends on the context'] * 2

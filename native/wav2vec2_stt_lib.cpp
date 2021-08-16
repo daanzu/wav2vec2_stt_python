@@ -58,8 +58,12 @@ bool wav2vec2_stt__decode(void* model_vp, float *wav_samples, int32_t wav_sample
 
     auto emission = model->encoder.forward({wav_tensor});
     auto result = model->decoder.forward({emission});
-
     auto hypothesis = result.toString()->string();
+
+    // Strip any trailing whitespace
+    auto last_pos = hypothesis.find_last_not_of(' ');
+    hypothesis = hypothesis.substr(0, last_pos + 1);
+
     auto cstr = hypothesis.c_str();
     strncpy(text, cstr, text_max_len);
     text[text_max_len - 1] = 0;  // Just in case.
